@@ -10,6 +10,7 @@ add_subdirectory(vendor)
 
 set(SOURCES
     src/main.c
+    src/memory.c
     src/util.c
 
     src/core/log.c

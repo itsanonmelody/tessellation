@@ -1,63 +1,26 @@
-#include <core/assert.h>
+#include <memory.h>
 #include <core/log.h>
 
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
-
+#include <time.h>
 #include <stdlib.h>
 
 int main()
 {
-    DEBUG_INFO("DEBUG INFO");
-    DEBUG_TRACE("DEBUG TRACE");
-    DEBUG_WARN("DEBUG WARN");
-    DEBUG_ERROR("DEBUG ERROR");
-    DEBUG_FATAL("DEBUG FATAL");
+    srand(time(NULL));
+    void *block = NULL;
+    size_t old_size = 0;
 
-    LOG_INFO("LOG INFO");
-    LOG_TRACE("LOG TRACE");
-    LOG_WARN("LOG WARN");
-    LOG_ERROR("LOG ERROR");
-    LOG_FATAL("LOG FATAL");
-
-    ASSERT(false, "ASSERT");
-
-    glfwInit();
-    
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    
-    GLFWwindow *window = glfwCreateWindow(800, 600, "Hello, World!", NULL, NULL);
-    if (window == NULL)
+    for (long long i = 0; i < 500000; ++i)
     {
-        LOG_ERROR("Failed to create window!");
-
-        glfwTerminate();
-        exit(1);
-    }
-    glfwMakeContextCurrent(window);
-    
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-    {
-        LOG_ERROR("Failed to load Glad!");
-
-        glfwDestroyWindow(window);
-        glfwTerminate();
-        exit(1);
-    }
-    glViewport(0, 0, 800, 600);
-
-    while (!glfwWindowShouldClose(window))
-    {
-        glClearColor(0.8f, 0.3f, 0.5f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
-
-        glfwSwapBuffers(window);
-        glfwPollEvents();
+        size_t new_size = rand() + 1;
+        reallocate(block, old_size, new_size);
+        old_size = new_size;
     }
 
-    glfwDestroyWindow(window);
-    glfwTerminate();
+    FREE_S(block, old_size);
+
+    LOG_INFO("Memory allocated: %zu", get_memory_allocated());
+    LOG_INFO("Memory freed: %zu", get_memory_freed());
+
     return 0;
 }
