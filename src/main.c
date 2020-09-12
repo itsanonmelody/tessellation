@@ -1,11 +1,24 @@
+#include <core/log.h>
+
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
-#include <stdio.h>
 #include <stdlib.h>
 
 int main()
 {
+    DEBUG_INFO("DEBUG INFO");
+    DEBUG_TRACE("DEBUG TRACE");
+    DEBUG_WARN("DEBUG WARN");
+    DEBUG_ERROR("DEBUG ERROR");
+    DEBUG_FATAL("DEBUG FATAL");
+
+    LOG_INFO("LOG INFO");
+    LOG_TRACE("LOG TRACE");
+    LOG_WARN("LOG WARN");
+    LOG_ERROR("LOG ERROR");
+    LOG_FATAL("LOG FATAL");
+
     glfwInit();
     
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
@@ -15,7 +28,7 @@ int main()
     GLFWwindow *window = glfwCreateWindow(800, 600, "Hello, World!", NULL, NULL);
     if (window == NULL)
     {
-        fprintf(stderr, "Failed to initialize window!");
+        LOG_ERROR("Failed to create window!");
 
         glfwTerminate();
         exit(1);
@@ -24,7 +37,7 @@ int main()
     
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
-        fprintf(stderr, "Failed to load Glad!");
+        LOG_ERROR("Failed to load Glad!");
 
         glfwDestroyWindow(window);
         glfwTerminate();
