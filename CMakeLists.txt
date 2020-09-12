@@ -22,7 +22,7 @@ IF(BUILD_CONFIG STREQUAL "Debug")
     list(APPEND GCC_COMPILE_OPTIONS -g -DTSL_DEBUG)
     list(APPEND GCC_LINK_OPTIONS -g)
     list(APPEND SOURCES
-
+        src/core/assert.c
     )
 ENDIF()
 

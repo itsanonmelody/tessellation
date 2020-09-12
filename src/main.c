@@ -1,3 +1,4 @@
+#include <core/assert.h>
 #include <core/log.h>
 
 #include <glad/glad.h>
@@ -18,6 +19,8 @@ int main()
     LOG_WARN("LOG WARN");
     LOG_ERROR("LOG ERROR");
     LOG_FATAL("LOG FATAL");
+
+    ASSERT(false, "ASSERT");
 
     glfwInit();
     
