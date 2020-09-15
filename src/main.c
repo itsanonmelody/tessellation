@@ -1,26 +1,20 @@
-#include <memory.h>
+#include <app.h>
 #include <core/log.h>
 
-#include <time.h>
 #include <stdlib.h>
 
 int main()
 {
-    srand(time(NULL));
-    void *block = NULL;
-    size_t old_size = 0;
-
-    for (long long i = 0; i < 500000; ++i)
+    struct Application *app = get_app_instance();
+    if (!init_app(app))
     {
-        size_t new_size = rand() + 1;
-        reallocate(block, old_size, new_size);
-        old_size = new_size;
+        LOG_FATAL("Failed to initialise application!");
+        destroy_app(app);
+        exit(1);
     }
 
-    FREE_S(block, old_size);
+    int status = run_app(app);
+    destroy_app(app);
 
-    LOG_INFO("Memory allocated: %zu", get_memory_allocated());
-    LOG_INFO("Memory freed: %zu", get_memory_freed());
-
-    return 0;
+    return status;
 }

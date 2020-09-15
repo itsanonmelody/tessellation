@@ -9,11 +9,13 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin")
 add_subdirectory(vendor)
 
 set(SOURCES
+    src/app.c
     src/main.c
     src/memory.c
     src/util.c
 
     src/core/log.c
+    src/graphics/shader.c
 )
 
 set(GCC_COMPILE_OPTIONS -Wall)
