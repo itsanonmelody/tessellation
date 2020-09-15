@@ -37,11 +37,13 @@ set_target_properties(
 target_include_directories(
     ${PROJECT_NAME} PUBLIC
     include
+    vendor/cglm/include
     vendor/glad/include
     vendor/glfw/include
 )
 target_link_libraries(
     ${PROJECT_NAME} PUBLIC
+    cglm
     glad
     glfw
 )

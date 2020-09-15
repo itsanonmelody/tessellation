@@ -3,6 +3,7 @@
 #include <core/log.h>
 #include <graphics/shader.h>
 
+#include <cglm/call.h>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
