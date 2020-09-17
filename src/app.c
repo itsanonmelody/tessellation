@@ -73,7 +73,7 @@ static bool init_window(struct Window *window)
         return false;
     }
     glfwMakeContextCurrent(window->native_window);
-    // glfwSetWindowAspectRatio(window->native_window, video_mode->width, video_mode->height);
+    glfwSetWindowAspectRatio(window->native_window, video_mode->width, video_mode->height);
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
@@ -125,27 +125,52 @@ int run_app(struct Application *app)
     LOG_TRACE("Running application...");
     app->running = true;
 
-    float vertices[] = {
-        // Location         // Color
-         0.0f, 0.0f, 0.0f,   1.0f, 1.0f, 1.0f,
-        -1.0f, 0.0f, 0.0f,   1.0f, 1.0f, 1.0f,
-        -2.0f, 1.0f, 0.0f,   1.0f, 1.0f, 1.0f,
-        -1.0f, 1.0f, 0.0f,   1.0f, 1.0f, 1.0f,
+    float model1[] = {
+        // Location           // Color
+         0.0f, 0.0f, 0.0f,    1.0f, 1.0f, 1.0f,
+        -1.0f, 0.0f, 0.0f,    1.0f, 1.0f, 1.0f,
+        -2.0f, 0.5f, 0.0f,    1.0f, 1.0f, 1.0f,
+        -1.0f, 0.5f, 0.0f,    1.0f, 1.0f, 1.0f,
+         0.0f, 1.0f, 0.0f,    1.0f, 1.0f, 1.0f,
+        -1.0f, 1.0f, 0.0f,    1.0f, 1.0f, 1.0f,
 
-        -0.10f, 0.05f, 0.0f,   0.2f, 0.5f, 0.8f,
-        -1.00f, 0.05f, 0.0f,   0.2f, 0.5f, 0.8f,
-        -1.90f, 0.95f, 0.0f,   0.2f, 0.5f, 0.8f,
-        -1.00f, 0.95f, 0.0f,   0.2f, 0.5f, 0.8f
+        -0.20f, 0.05f, 0.0f,    0.2f, 0.5f, 0.8f,
+        -1.00f, 0.05f, 0.0f,    0.2f, 0.5f, 0.8f,
+        -1.90f, 0.50f, 0.0f,    0.2f, 0.5f, 0.8f,
+        -1.10f, 0.50f, 0.0f,    0.2f, 0.5f, 0.8f,
+        -0.20f, 0.95f, 0.0f,    0.2f, 0.5f, 0.8f,
+        -1.00f, 0.95f, 0.0f,    0.2f, 0.5f, 0.8f
+    };
+
+    float model2[] = {
+        // Location           // Color
+         0.0f, 0.0f, 0.0f,    1.0f, 1.0f, 1.0f,
+        -1.0f, 0.0f, 0.0f,    1.0f, 1.0f, 1.0f,
+        -2.0f, 0.5f, 0.0f,    1.0f, 1.0f, 1.0f,
+        -1.0f, 0.5f, 0.0f,    1.0f, 1.0f, 1.0f,
+         0.0f, 1.0f, 0.0f,    1.0f, 1.0f, 1.0f,
+        -1.0f, 1.0f, 0.0f,    1.0f, 1.0f, 1.0f,
+
+        -0.20f, 0.05f, 0.0f,    0.8f, 0.8f, 0.2f, 
+        -1.00f, 0.05f, 0.0f,    0.8f, 0.8f, 0.2f, 
+        -1.90f, 0.50f, 0.0f,    0.8f, 0.8f, 0.2f, 
+        -1.10f, 0.50f, 0.0f,    0.8f, 0.8f, 0.2f, 
+        -0.20f, 0.95f, 0.0f,    0.8f, 0.8f, 0.2f, 
+        -1.00f, 0.95f, 0.0f,    0.8f, 0.8f, 0.2f
     };
 
     unsigned int indices[] = {
         // Border.
         0, 1, 2,
         0, 3, 2,
+        2, 3, 4,
+        2, 5, 4,
 
         // Fill.
-        4, 5, 6,
-        4, 7, 6
+        6, 7, 8,
+        6, 9, 8,
+        8, 9, 10,
+        8, 11, 10
     };
 
     const char *vertex_source =
@@ -171,15 +196,15 @@ int run_app(struct Application *app)
     
     unsigned int shader_program = create_shader(vertex_source, fragment_source);
 
-    unsigned int vao;
-    glGenVertexArrays(1, &vao);
-    glBindVertexArray(vao);
+    unsigned int vao[2];
+    glGenVertexArrays(2, vao);
+    glBindVertexArray(vao[0]);
 
-    unsigned int vbo[2];
-    glGenBuffers(2, vbo);
+    unsigned int vbo[3];
+    glGenBuffers(3, vbo);
 
     glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(model1), model1, GL_STATIC_DRAW);
 
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(
@@ -200,8 +225,36 @@ int run_app(struct Application *app)
         6 * sizeof(float),
         (void*)(3 * sizeof(float))
     );
-    
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[1]);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[2]);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+    glBindVertexArray(vao[1]);
+
+    glBindBuffer(GL_ARRAY_BUFFER, vbo[1]);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(model2), model2, GL_STATIC_DRAW);
+
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(
+        0,
+        3,
+        GL_FLOAT,
+        GL_FALSE,
+        6 * sizeof(float),
+        (void*)0
+    );
+
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(
+        1,
+        3,
+        GL_FLOAT,
+        GL_FALSE,
+        6 * sizeof(float),
+        (void*)(3 * sizeof(float))
+    );
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[2]);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
     while (app->running)
@@ -249,10 +302,10 @@ int run_app(struct Application *app)
             (float*)projection
         );
 
-        glBindVertexArray(vao);
-        for (int i = 0; i < 4; i++)
+        glBindVertexArray(vao[0]);
+        for (int i = 0; i < 2; i++)
         {
-            float y = 1.0f - 1.0f * i;
+            float y = 1.0f - 2.0f * i;
             for (int j = 0; j < 9; j++)
             {
                 float x = 5.0f - 1.0f * j;
@@ -267,7 +320,30 @@ int run_app(struct Application *app)
                     (float*)model
                 );
 
-                glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_INT, NULL);
+                glDrawElements(GL_TRIANGLES, 24, GL_UNSIGNED_INT, NULL);
+            }
+        }
+
+        glBindVertexArray(vao[1]);
+        for (int i = 0; i < 2; i++)
+        {
+            float y = 0.0f - 2.0f * i;
+            for (int j = 0; j < 9; j++)
+            {
+                float x = 5.0f - 1.0f * j;
+                mat4 model;
+                glmc_mat4_identity(model);
+                glmc_scale(model, (vec3){ -1.0f, 1.0f, 0.0f });
+                glmc_translate(model, (vec3){ x, y, 0.0f });
+
+                glUniformMatrix4fv(
+                    glGetUniformLocation(shader_program, "model"),
+                    1,
+                    GL_FALSE,
+                    (float*)model
+                );
+
+                glDrawElements(GL_TRIANGLES, 24, GL_UNSIGNED_INT, NULL);
             }
         }
 
@@ -275,8 +351,8 @@ int run_app(struct Application *app)
         glfwPollEvents();
     }
 
-    glDeleteBuffers(2, vbo);
-    glDeleteVertexArrays(1, &vao);
+    glDeleteBuffers(3, vbo);
+    glDeleteVertexArrays(2, vao);
 
     glDeleteProgram(shader_program);
 
