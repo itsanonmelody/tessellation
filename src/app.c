@@ -73,7 +73,7 @@ static bool init_window(struct Window *window)
         return false;
     }
     glfwMakeContextCurrent(window->native_window);
-    glfwSetWindowAspectRatio(window->native_window, video_mode->width, video_mode->height);
+    // glfwSetWindowAspectRatio(window->native_window, video_mode->width, video_mode->height);
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
@@ -126,29 +126,47 @@ int run_app(struct Application *app)
     app->running = true;
 
     float vertices[] = {
-        -0.5f, -0.5f, 0.0f,
-         0.5f, -0.5f, 0.0f,
-         0.5f,  0.5f, 0.0f,
-        -0.5f,  0.5f, 0.0f
+        // Location         // Color
+         0.0f, 0.0f, 0.0f,   1.0f, 1.0f, 1.0f,
+        -1.0f, 0.0f, 0.0f,   1.0f, 1.0f, 1.0f,
+        -2.0f, 1.0f, 0.0f,   1.0f, 1.0f, 1.0f,
+        -1.0f, 1.0f, 0.0f,   1.0f, 1.0f, 1.0f,
+
+        -0.10f, 0.05f, 0.0f,   0.2f, 0.5f, 0.8f,
+        -1.00f, 0.05f, 0.0f,   0.2f, 0.5f, 0.8f,
+        -1.90f, 0.95f, 0.0f,   0.2f, 0.5f, 0.8f,
+        -1.00f, 0.95f, 0.0f,   0.2f, 0.5f, 0.8f
     };
 
     unsigned int indices[] = {
+        // Border.
         0, 1, 2,
-        0, 3, 2
+        0, 3, 2,
+
+        // Fill.
+        4, 5, 6,
+        4, 7, 6
     };
 
     const char *vertex_source =
         "#version 330 core\n"
         "layout(location = 0) in vec3 a_Pos;\n"
+        "layout(location = 1) in vec3 a_Color;\n"
+        "out vec4 color;\n"
+        "uniform mat4 model;\n"
+        "uniform mat4 view;\n"
+        "uniform mat4 projection;\n"
         "void main() {\n"
-        "  gl_Position = vec4(a_Pos, 1.0);\n"
+        "  color = vec4(a_Color, 1.0);\n"
+        "  gl_Position = projection * view * model * vec4(a_Pos, 1.0);\n"
         "}";
     
     const char *fragment_source =
         "#version 330 core\n"
-        "out vec4 color;\n"
+        "in vec4 color;\n"
+        "out vec4 pixel;\n"
         "void main() {\n"
-        "  color = vec4(0.8, 0.3, 0.5, 1.0);\n"
+        "  pixel = color;\n"
         "}";
     
     unsigned int shader_program = create_shader(vertex_source, fragment_source);
@@ -163,16 +181,26 @@ int run_app(struct Application *app)
     glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
+    glEnableVertexAttribArray(0);
     glVertexAttribPointer(
         0,
         3,
         GL_FLOAT,
         GL_FALSE,
-        3 * sizeof(float),
+        6 * sizeof(float),
         (void*)0
     );
-    glEnableVertexAttribArray(0);
 
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(
+        1,
+        3,
+        GL_FLOAT,
+        GL_FALSE,
+        6 * sizeof(float),
+        (void*)(3 * sizeof(float))
+    );
+    
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[1]);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
@@ -187,8 +215,61 @@ int run_app(struct Application *app)
         glClear(GL_COLOR_BUFFER_BIT);
 
         glUseProgram(shader_program);
+
+        mat4 view;
+        glmc_lookat(
+            (vec3){ 0.0f, 0.0f, -3.0f },
+            (vec3){ 0.0f, 0.0f,  0.0f },
+            (vec3){ 0.0f, 1.0f,  0.0f },
+            view
+        );
+
+        glUniformMatrix4fv(
+            glGetUniformLocation(shader_program, "view"),
+            1,
+            GL_FALSE,
+            (float*)view
+        );
+
+        float aspect_ratio =
+            2 * (float)app->window.data.width / (float)app->window.data.height;
+
+        mat4 projection;
+        glmc_ortho(
+           -aspect_ratio, aspect_ratio,
+           -2.0f, 2.0f,
+            0.1f, 100.0f,
+            projection
+        );
+
+        glUniformMatrix4fv(
+            glGetUniformLocation(shader_program, "projection"),
+            1,
+            GL_FALSE,
+            (float*)projection
+        );
+
         glBindVertexArray(vao);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
+        for (int i = 0; i < 4; i++)
+        {
+            float y = 1.0f - 1.0f * i;
+            for (int j = 0; j < 9; j++)
+            {
+                float x = 5.0f - 1.0f * j;
+                mat4 model;
+                glmc_mat4_identity(model);
+                glmc_translate(model, (vec3){ x, y, 0.0f });
+
+                glUniformMatrix4fv(
+                    glGetUniformLocation(shader_program, "model"),
+                    1,
+                    GL_FALSE,
+                    (float*)model
+                );
+
+                glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_INT, NULL);
+            }
+        }
 
         glfwSwapBuffers(app->window.native_window);
         glfwPollEvents();
