@@ -1,4 +1,5 @@
 #include <app.h>
+#include <common.h>
 #include <memory.h>
 #include <core/log.h>
 #include <graphics/shader.h>
@@ -6,6 +7,9 @@
 #include <cglm/call.h>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include <stb_image_write.h>
 
 #define WINDOW_TITLE "Tessellation"
 
@@ -118,6 +122,33 @@ void destroy_app(struct Application *app)
 
     glfwDestroyWindow(app->window.native_window);
     glfwTerminate();
+}
+
+static void save_buffer_to_image(int width, int height)
+{
+    LOG_TRACE("Saving buffer to file: tessellation.png");
+
+    const int size = 4 * width * height;
+    unsigned char *data = ALLOC_ARRAY(unsigned char, size);
+    glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, data);
+
+    int status = (int)glGetError();
+    if (status != GL_NO_ERROR)
+    {
+        LOG_ERROR("GL ERROR (%d)", status);
+    }
+
+    else
+    {
+        stbi_flip_vertically_on_write(true);
+        status = stbi_write_png("tessellation.png", width, height, 4, data, 4 * width);
+        if (status == 0)
+        {
+            LOG_ERROR("Failed to save buffer to file");   
+        }
+    }
+
+    FREE_ARRAY(data, unsigned char, size);
 }
 
 int run_app(struct Application *app)
@@ -350,6 +381,11 @@ int run_app(struct Application *app)
         glfwSwapBuffers(app->window.native_window);
         glfwPollEvents();
     }
+
+    save_buffer_to_image(
+        (int)app->window.data.width,
+        (int)app->window.data.height
+    );
 
     glDeleteBuffers(3, vbo);
     glDeleteVertexArrays(2, vao);

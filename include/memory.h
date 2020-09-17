@@ -6,8 +6,14 @@
 #define ALLOC(type) \
     (type*)reallocate(NULL, 0, sizeof(type))
 
+#define ALLOC_ARRAY(type, count) \
+    (type*)reallocate(NULL, 0, (count) * sizeof(type))
+
 #define FREE(block, type) \
     reallocate((block), sizeof(type), 0)
+
+#define FREE_ARRAY(array, type, count) \
+    reallocate((array), (count) * sizeof(type), 0)
 
 #define FREE_S(block, size) \
     reallocate((block), (size), 0)
