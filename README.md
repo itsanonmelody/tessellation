@@ -6,7 +6,7 @@ The program shows a tessellation on the screen. Upon closing the window, the tes
 
 # Build
 ```
-cmake -G <generator-of-choice> -S . -B build -DCGLM_STATIC
+cmake -G <generator-of-choice> -S . -B build -DCGLM_STATIC=ON
 cmake --build build
 ```
 The executable will bin located in `./bin/`.
