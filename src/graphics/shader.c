@@ -1,4 +1,5 @@
 #include <common.h>
+#include <memory.h>
 #include <core/log.h>
 #include <graphics/shader.h>
 
@@ -21,11 +22,13 @@ unsigned int create_shader(const char *vertex_source, const char *fragment_sourc
         glGetShaderiv(shaders[0], GL_INFO_LOG_LENGTH, &info_log_length);
 
         // info_log_length is decremented once to remove the newline at the end.
-        char info_log[--info_log_length];
+        char *info_log = ALLOC_ARRAY(char, --info_log_length);
         glGetShaderInfoLog(shaders[0], info_log_length, NULL, info_log);
 
         LOG_ERROR("Failed to compile vertex shader:");
         LOG_ERROR("    %s", info_log);
+        
+        FREE_ARRAY(info_log, char, info_log_length);
     }
 
     shaders[1] = glCreateShader(GL_FRAGMENT_SHADER);
@@ -39,11 +42,13 @@ unsigned int create_shader(const char *vertex_source, const char *fragment_sourc
         glGetShaderiv(shaders[1], GL_INFO_LOG_LENGTH, &info_log_length);
 
         // info_log_length is decremented once to remove the newline at the end.
-        char info_log[--info_log_length];
+        char *info_log = ALLOC_ARRAY(char, --info_log_length);
         glGetShaderInfoLog(shaders[1], info_log_length, NULL, info_log);
 
         LOG_ERROR("Failed to compile fragment shader:");
         LOG_ERROR("    %s", info_log);
+
+        FREE_ARRAY(info_log, char, info_log_length);
     }
 
     glAttachShader(shader_program, shaders[0]);
@@ -57,11 +62,13 @@ unsigned int create_shader(const char *vertex_source, const char *fragment_sourc
         glGetProgramiv(shader_program, GL_INFO_LOG_LENGTH, &info_log_length);
 
         // info_log_length is decremented once to remove the newline at the end.
-        char info_log[--info_log_length];
+        char *info_log = ALLOC_ARRAY(char, --info_log_length);
         glGetProgramInfoLog(shader_program, info_log_length, NULL, info_log);
 
         LOG_ERROR("Failed to link shaders:");
         LOG_ERROR("    %s", info_log);
+
+        FREE_ARRAY(info_log, char, info_log_length);
     }
 
     glDetachShader(shader_program, shaders[1]);
